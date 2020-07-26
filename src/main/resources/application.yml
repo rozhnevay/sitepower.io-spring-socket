@@ -1,0 +1,7 @@
+
+socket:
+  host: localhost
+  port: 9092
+logging:
+  level:
+    ROOT: DEBUG
