@@ -2,6 +2,18 @@
 socket:
   host: localhost
   port: 9092
-logging:
-  level:
-    ROOT: DEBUG
+spring:
+  application:
+    name: sitepower
+  datasource:
+    url: jdbc:postgresql://${DATASOURCE_HOST:localhost}:${DATASOURCE_PORT:5432}/${DATASOURCE_NAME:postgres}
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    initialization-mode: always
+  liquibase:
+    change-log: classpath:master.yaml
+    enabled: true
+  http:
+    encoding:
+      charset: UTF-8

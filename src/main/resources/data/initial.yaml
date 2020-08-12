@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20200425_create_super_user
+      author: arozhnev
+      changes:
+        - sql:
+            sql: insert into tenant(main_user_id)
+              values(1);
+            # Password: qwe
+            sql: insert into user_info(email, password, full_name, tenant_id)
+                 select 'admin@admin.com', '$2a$10$zNXmBn.oIgWEdAIx9Jy48uR0p.RD833PLWWnY7qLKuKzKrkljfW4q', 'First Administrator', id from tenant;
+            sql: insert into form(origin, tenant_id)
+              select 'localhost', id from tenant;
