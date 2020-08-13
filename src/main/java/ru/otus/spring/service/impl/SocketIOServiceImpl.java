@@ -26,7 +26,8 @@ public class SocketIOServiceImpl implements SocketIOService {
   /**
    * Custom Event`push_data_event` for service side to client communication
    */
-  private static final String PUSH_DATA_EVENT = "push_data_event";
+  private static final String SEND_DATA_EVENT = "send";
+  private static final String RECEIVE_DATA_EVENT = "receive";
 
   @Autowired
   private SocketIOServer socketIOServer;
@@ -72,10 +73,10 @@ public class SocketIOServiceImpl implements SocketIOService {
     });
 
     // Custom Event`client_info_event` ->Listen for client messages
-    socketIOServer.addEventListener(PUSH_DATA_EVENT, String.class, (client, data, ackSender) -> {
-      // When a client pushes a `client_info_event` event, onData accepts data, which is json data of type string here and can be Byte[], other types of object
+    socketIOServer.addEventListener(SEND_DATA_EVENT, Object.class, (client, data, ackSender) -> {
       String clientIp = getIpByClient(client);
       log.debug(clientIp + " ************ Client:" + data);
+      client.sendEvent(RECEIVE_DATA_EVENT, data);
     });
 
     // Start Services
@@ -94,7 +95,7 @@ public class SocketIOServiceImpl implements SocketIOService {
   public void pushMessageToUser(String userId, String msgContent) {
     SocketIOClient client = clientMap.get(userId);
     if (client != null) {
-      client.sendEvent(PUSH_DATA_EVENT, msgContent);
+      client.sendEvent(RECEIVE_DATA_EVENT, msgContent);
     }
   }
 

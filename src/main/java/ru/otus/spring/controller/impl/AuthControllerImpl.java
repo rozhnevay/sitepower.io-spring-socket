@@ -12,7 +12,6 @@ public class AuthControllerImpl implements AuthController {
 
   private final UserService userService;
 
-
   @Override
   public UserInfo login() {
     return getCurrentUser();

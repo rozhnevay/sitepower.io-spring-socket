@@ -22,7 +22,7 @@ databaseChangeLog:
                     primaryKeyName: pk_tenant
                   defaultValue: uuid_generate_v1()
               - column:
-                  name: main_user_id
+                  name: main_user_info_id
                   type: uuid
               - column:
                   name: created_date
@@ -73,11 +73,11 @@ databaseChangeLog:
                     nullable: false
                   defaultValue: now()
   - changeSet:
-      id: 20200812_create_form_table
+      id: 20200812_create_widget_table
       author: arozhnev
       changes:
         - createTable:
-            tableName: form
+            tableName: widget
             columns:
               - column:
                   name: id
@@ -85,7 +85,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     primaryKey: true
-                    primaryKeyName: pk_form
+                    primaryKeyName: pk_widget
                   defaultValue:  uuid_generate_v1()
               - column:
                   name: tenant_id
@@ -149,13 +149,6 @@ databaseChangeLog:
                     primaryKeyName: pk_dialog
                   defaultValue:  uuid_generate_v1()
               - column:
-                  name: tenant_id
-                  type: uuid
-                  constraints:
-                    nullable: false
-                    foreignKeyName: fk_tenant
-                    references: tenant(id)
-              - column:
                   name: class
                   type: varchar(10)
               - column:
@@ -165,12 +158,12 @@ databaseChangeLog:
                   name: region
                   type: varchar(1000)
               - column:
-                  name: form_id
+                  name: widget_id
                   type: uuid
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_form
-                    references: form(id)
+                    foreignKeyName: fk_widget
+                    references: widget(id)
               - column:
                   name: cnt_unanswered
                   type: bigint

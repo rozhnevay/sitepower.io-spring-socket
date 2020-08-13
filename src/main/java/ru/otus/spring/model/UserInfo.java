@@ -1,5 +1,6 @@
 package ru.otus.spring.model;
 
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,9 +20,9 @@ import java.util.Collections;
 public class UserInfo implements UserDetails {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", unique = true, nullable = false)
-  private Long id;
+  private UUID id;
 
   @Column(name = "password")
   private String password;
