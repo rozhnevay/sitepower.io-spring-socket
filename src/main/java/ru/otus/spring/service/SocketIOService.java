@@ -11,11 +11,4 @@ public interface SocketIOService {
    */
   void stop();
 
-  /**
-   * Push information to specified client
-   *
-   * @param userId:     Client Unique Identification
-   * @param msgContent: Message Content
-   */
-  void pushMessageToUser(String userId, String msgContent);
 }

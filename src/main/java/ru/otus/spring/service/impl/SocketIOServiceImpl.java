@@ -2,10 +2,18 @@ package ru.otus.spring.service.impl;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
+import java.util.ArrayList;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import ru.otus.spring.dto.MessageDto;
+import ru.otus.spring.model.Dialog;
+import ru.otus.spring.model.Message;
+import ru.otus.spring.model.Tenant;
+import ru.otus.spring.model.UserInfo;
+import ru.otus.spring.service.DialogService;
 import ru.otus.spring.service.SocketIOService;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +22,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import ru.otus.spring.service.UserService;
+import ru.otus.spring.service.WidgetService;
 
 @Service
 @Slf4j
@@ -21,17 +31,27 @@ public class SocketIOServiceImpl implements SocketIOService {
   /**
    * Store connected clients
    */
-  private static Map<String, SocketIOClient> clientMap = new ConcurrentHashMap<>();
-
+  private static Map<Dialog, SocketIOClient> clientMap = new ConcurrentHashMap<>();
+  private static Map<Tenant, ArrayList<SocketIOClient>> tenantMap = new ConcurrentHashMap<>();
   /**
    * Custom Event`push_data_event` for service side to client communication
    */
-  private static final String SEND_DATA_EVENT = "send";
-  private static final String RECEIVE_DATA_EVENT = "receive";
+  private static final String SEND_CLIENT_DATA_EVENT = "receive_client";
+  private static final String SEND_USER_DATA_EVENT = "receive_user";
+  private static final String RECEIVE_CLIENT_DATA_EVENT = "receive_client";
+  private static final String RECEIVE_USER_DATA_EVENT = "receive_user";
 
   @Autowired
   private SocketIOServer socketIOServer;
 
+  @Autowired
+  private WidgetService widgetService;
+
+  @Autowired
+  private DialogService dialogService;
+
+  @Autowired
+  private UserService userService;
   /**
    * Spring IoC After the container is created, start after loading the SocketIOServiceImpl Bean
    */
@@ -52,34 +72,66 @@ public class SocketIOServiceImpl implements SocketIOService {
   public void start() {
     // Listen for client connections
     socketIOServer.addConnectListener(client -> {
-      log.info("************ Client: " + getIpByClient(client) + " Connected ************");
-      // Custom Events `connected` -> communicate with clients (built-in events such as Socket.EVENT_CONNECT can also be used)
+      log.info("************ DialogId: " + getDialogIdByClient(client) + " UserId: " + getUserIdByClient(client) + " Connected ************");
       client.sendEvent("connected", "You're connected successfully...");
-      String userId = getParamsByClient(client);
-      if (userId != null) {
-        clientMap.put(userId, client);
+      String userId = getUserIdByClient(client);
+      String dialogId = getDialogIdByClient(client);
+
+      if (dialogId != null) {
+        Dialog dialog = dialogService.getDialogById(UUID.fromString(dialogId));
+        clientMap.put(dialog, client);
+      } else if (userId != null) {
+        Tenant tenant = userService.getTenantByUserId(UUID.fromString(userId));
+        ArrayList<SocketIOClient> clientList = tenantMap.get(tenant);
+        if (clientList == null) {
+          clientList = new ArrayList<>();
+        }
+        clientList.add(client);
+        tenantMap.put(tenant, clientList);
+      } else {
+        throw new RuntimeException("Can't identified client");
       }
     });
 
     // Listening Client Disconnect
     socketIOServer.addDisconnectListener(client -> {
-      String clientIp = getIpByClient(client);
-      log.info(clientIp + " *********************** " + "Client disconnected");
-      String userId = getParamsByClient(client);
-      if (userId != null) {
-        clientMap.remove(userId);
-        client.disconnect();
+      String userId = getUserIdByClient(client);
+      String dialogId = getDialogIdByClient(client);
+      log.info("************ DialogId: " + getDialogIdByClient(client) + " UserId: " + getUserIdByClient(client) + " Client disconnected ************");
+      if (dialogId != null) {
+        Dialog dialog = dialogService.getDialogById(UUID.fromString(dialogId));
+        clientMap.remove(dialog);
+      } else if (userId != null) {
+        Tenant tenant = userService.getTenantByUserId(UUID.fromString(userId));
+        ArrayList<SocketIOClient> clientList = tenantMap.get(tenant);
+        if (clientList == null) {
+          clientList = new ArrayList<>();
+        }
+        clientList.add(client);
+        tenantMap.remove(tenant);
+      } else {
+        throw new RuntimeException("Can't identified client");
       }
     });
 
     // Custom Event`client_info_event` ->Listen for client messages
-    socketIOServer.addEventListener(SEND_DATA_EVENT, Object.class, (client, data, ackSender) -> {
-      String clientIp = getIpByClient(client);
-      log.debug(clientIp + " ************ Client:" + data);
-      client.sendEvent(RECEIVE_DATA_EVENT, data);
+    socketIOServer.addEventListener(SEND_CLIENT_DATA_EVENT, Object.class, (client, data, ackSender) -> {
+      String dialogId = getDialogIdByClient(client);
+      Tenant tenant = dialogService.getTenantByDialogId(UUID.fromString(dialogId));
+      ArrayList<SocketIOClient> clients = tenantMap.get(tenant);
+      if (clients != null) {
+        clients.forEach(user -> {
+          user.sendEvent(RECEIVE_USER_DATA_EVENT, data);
+        });
+      }
+      MessageDto messageDto = (MessageDto) data;
+      dialogService.addDialogMessage(UUID.fromString(dialogId), messageDto);
     });
 
-    // Start Services
+    socketIOServer.addEventListener(SEND_USER_DATA_EVENT, Object.class, (client, data, ackSender) -> {
+      String userId = getUserIdByClient(client);
+    });
+
     socketIOServer.start();
   }
 
@@ -91,39 +143,18 @@ public class SocketIOServiceImpl implements SocketIOService {
     }
   }
 
-  @Override
-  public void pushMessageToUser(String userId, String msgContent) {
-    SocketIOClient client = clientMap.get(userId);
-    if (client != null) {
-      client.sendEvent(RECEIVE_DATA_EVENT, msgContent);
-    }
-  }
 
-  /**
-   * Get the userId parameter in the client url (modified here to suit individual needs and client side)
-   *
-   * @param client: Client
-   * @return: java.lang.String
-   */
-  private String getParamsByClient(SocketIOClient client) {
-    // Get the client url parameter (where userId is the unique identity)
-    Map<String, List<String>> params = client.getHandshakeData().getUrlParams();
-    List<String> userIdList = params.get("userId");
-    if (!CollectionUtils.isEmpty(userIdList)) {
-      return userIdList.get(0);
+  private String getDialogIdByClient(SocketIOClient client) {
+    if (client.getHandshakeData().getUrlParams().get("dialogId") != null) {
+      return client.getHandshakeData().getUrlParams().get("dialogId").get(0);
     }
     return null;
   }
 
-  /**
-   * Get the connected client ip address
-   *
-   * @param client: Client
-   * @return: java.lang.String
-   */
-  private String getIpByClient(SocketIOClient client) {
-    String sa = client.getRemoteAddress().toString();
-    String clientIp = sa.substring(1, sa.indexOf(":"));
-    return clientIp;
+  private String getUserIdByClient(SocketIOClient client) {
+    if (client.getHandshakeData().getUrlParams().get("userId") != null) {
+      return client.getHandshakeData().getUrlParams().get("userId").get(0);
+    }
+    return null;
   }
 }

@@ -1,5 +1,6 @@
 package ru.otus.spring.service.impl;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import ru.otus.spring.model.Tenant;
 import ru.otus.spring.model.UserInfo;
 import ru.otus.spring.repository.UserRepository;
 import ru.otus.spring.service.UserService;
@@ -37,6 +39,11 @@ public class UserServiceImpl implements UserService {
   public UserInfo getCurrentUser() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     return userRepository.findUserByEmailIgnoreCase(auth.getName()).orElse(null);
+  }
+
+  @Override
+  public Tenant getTenantByUserId(UUID userId) {
+    return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found")).getTenant();
   }
 //
 //  @Override

@@ -10,6 +10,7 @@ import ru.otus.spring.dto.DialogDto;
 import ru.otus.spring.dto.MessageDto;
 import ru.otus.spring.model.Dialog;
 import ru.otus.spring.model.Message;
+import ru.otus.spring.model.Tenant;
 import ru.otus.spring.model.Widget;
 import ru.otus.spring.repository.DialogRepository;
 import ru.otus.spring.repository.MessageRepository;
@@ -49,6 +50,18 @@ public class DialogServiceImpl implements DialogService {
   }
 
   @Override
+  public void addDialogMessage(UUID dialogId, MessageDto messageDto) {
+    Dialog dialog = dialogRepository.findById(dialogId).orElseThrow(() -> new RuntimeException("Dialog not found"));
+    Message message = new Message();
+    message.setBody(messageDto.getBody());
+    message.setDialog(dialog);
+    message.setDirection(messageDto.getDirection());
+    message.setType(messageDto.getType());
+    /* TODO: доделать сохранение юзера в зависимости от direction */
+    messageRepository.save(message);
+  }
+
+  @Override
   public DialogDto createDialog(DialogDto dialogDto) {
     if (dialogDto.getWidgetId() == null) {
       throw new RuntimeException("Widget not specified"); /* TODO: в коснтанты */
@@ -66,5 +79,16 @@ public class DialogServiceImpl implements DialogService {
     dialogDto.setDialogId(dialog.getId());
     dialogDto.setWidgetId(dialog.getWidget().getId());
     return dialogDto;
+  }
+
+  @Override
+  public Tenant getTenantByDialogId(UUID dialogId) {
+    Dialog dialog = dialogRepository.findById(dialogId).orElseThrow(() -> new RuntimeException("Dialog not found"));
+    return  dialog.getWidget().getTenant();
+  }
+
+  @Override
+  public Dialog getDialogById(UUID dialogId) {
+    return dialogRepository.findById(dialogId).get();
   }
 }

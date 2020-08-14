@@ -33,6 +33,9 @@ public class UserInfo implements UserDetails {
   @Column(name = "email")
   private String email;
 
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "tenant_id")
+  private Tenant tenant;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
