@@ -2,8 +2,9 @@ package ru.otus.spring.service.impl;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
-import java.util.ArrayList;
-import java.util.UUID;
+
+import java.util.*;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,6 @@ import ru.otus.spring.service.SocketIOService;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import ru.otus.spring.service.UserService;
 import ru.otus.spring.service.WidgetService;
@@ -36,8 +35,8 @@ public class SocketIOServiceImpl implements SocketIOService {
   /**
    * Custom Event`push_data_event` for service side to client communication
    */
-  private static final String SEND_CLIENT_DATA_EVENT = "receive_client";
-  private static final String SEND_USER_DATA_EVENT = "receive_user";
+  private static final String SEND_CLIENT_DATA_EVENT = "send_client";
+  private static final String SEND_USER_DATA_EVENT = "send_user";
   private static final String RECEIVE_CLIENT_DATA_EVENT = "receive_client";
   private static final String RECEIVE_USER_DATA_EVENT = "receive_user";
 
@@ -52,17 +51,12 @@ public class SocketIOServiceImpl implements SocketIOService {
 
   @Autowired
   private UserService userService;
-  /**
-   * Spring IoC After the container is created, start after loading the SocketIOServiceImpl Bean
-   */
+
   @PostConstruct
   private void autoStartup() {
     start();
   }
 
-  /**
-   * Spring IoC Container closes before destroying SocketIOServiceImpl Bean to avoid restarting project service port occupancy
-   */
   @PreDestroy
   private void autoStop() {
     stop();
@@ -78,9 +72,11 @@ public class SocketIOServiceImpl implements SocketIOService {
       String dialogId = getDialogIdByClient(client);
 
       if (dialogId != null) {
+        /* Значит это клиент из плагина */
         Dialog dialog = dialogService.getDialogById(UUID.fromString(dialogId));
         clientMap.put(dialog, client);
       } else if (userId != null) {
+        /* Значит это пользователь из админки */
         Tenant tenant = userService.getTenantByUserId(UUID.fromString(userId));
         ArrayList<SocketIOClient> clientList = tenantMap.get(tenant);
         if (clientList == null) {
@@ -124,7 +120,12 @@ public class SocketIOServiceImpl implements SocketIOService {
           user.sendEvent(RECEIVE_USER_DATA_EVENT, data);
         });
       }
-      MessageDto messageDto = (MessageDto) data;
+      MessageDto messageDto = new MessageDto();
+      LinkedHashMap<String, String> dataMap = (LinkedHashMap<String, String>) data;
+      messageDto.setBody(dataMap.get("body"));
+      messageDto.setType(dataMap.get("type"));
+      messageDto.setLink(dataMap.get("link"));
+      messageDto.setDirection("to_user");
       dialogService.addDialogMessage(UUID.fromString(dialogId), messageDto);
     });
 

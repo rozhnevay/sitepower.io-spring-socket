@@ -1,5 +1,6 @@
 package ru.otus.spring.service.impl;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,6 +58,7 @@ public class DialogServiceImpl implements DialogService {
     message.setDialog(dialog);
     message.setDirection(messageDto.getDirection());
     message.setType(messageDto.getType());
+    message.setCreatedDate(Instant.now());
     /* TODO: доделать сохранение юзера в зависимости от direction */
     messageRepository.save(message);
   }
