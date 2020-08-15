@@ -31,7 +31,7 @@ public class SocketIOServiceImpl implements SocketIOService {
    * Store connected clients
    */
   private static Map<Dialog, SocketIOClient> clientMap = new ConcurrentHashMap<>();
-  private static Map<Tenant, ArrayList<SocketIOClient>> tenantMap = new ConcurrentHashMap<>();
+  private static Map<UUID, ArrayList<SocketIOClient>> tenantMap = new ConcurrentHashMap<>();
   /**
    * Custom Event`push_data_event` for service side to client communication
    */
@@ -78,12 +78,12 @@ public class SocketIOServiceImpl implements SocketIOService {
       } else if (userId != null) {
         /* Значит это пользователь из админки */
         Tenant tenant = userService.getTenantByUserId(UUID.fromString(userId));
-        ArrayList<SocketIOClient> clientList = tenantMap.get(tenant);
+        ArrayList<SocketIOClient> clientList = tenantMap.get(tenant.getId());
         if (clientList == null) {
           clientList = new ArrayList<>();
         }
         clientList.add(client);
-        tenantMap.put(tenant, clientList);
+        tenantMap.put(tenant.getId(), clientList);
       } else {
         throw new RuntimeException("Can't identified client");
       }
@@ -99,12 +99,12 @@ public class SocketIOServiceImpl implements SocketIOService {
         clientMap.remove(dialog);
       } else if (userId != null) {
         Tenant tenant = userService.getTenantByUserId(UUID.fromString(userId));
-        ArrayList<SocketIOClient> clientList = tenantMap.get(tenant);
+        ArrayList<SocketIOClient> clientList = tenantMap.get(tenant.getId());
         if (clientList == null) {
           clientList = new ArrayList<>();
         }
         clientList.add(client);
-        tenantMap.remove(tenant);
+        tenantMap.remove(tenant.getId());
       } else {
         throw new RuntimeException("Can't identified client");
       }
@@ -114,19 +114,24 @@ public class SocketIOServiceImpl implements SocketIOService {
     socketIOServer.addEventListener(SEND_CLIENT_DATA_EVENT, Object.class, (client, data, ackSender) -> {
       String dialogId = getDialogIdByClient(client);
       Tenant tenant = dialogService.getTenantByDialogId(UUID.fromString(dialogId));
-      ArrayList<SocketIOClient> clients = tenantMap.get(tenant);
-      if (clients != null) {
-        clients.forEach(user -> {
-          user.sendEvent(RECEIVE_USER_DATA_EVENT, data);
-        });
-      }
+
+
       MessageDto messageDto = new MessageDto();
       LinkedHashMap<String, String> dataMap = (LinkedHashMap<String, String>) data;
       messageDto.setBody(dataMap.get("body"));
       messageDto.setType(dataMap.get("type"));
       messageDto.setLink(dataMap.get("link"));
       messageDto.setDirection("to_user");
+      messageDto.setCreatedDate(Instant.now());
+      messageDto.setSenderId(UUID.fromString(dialogId));
       dialogService.addDialogMessage(UUID.fromString(dialogId), messageDto);
+
+      ArrayList<SocketIOClient> clients = tenantMap.get(tenant.getId());
+      if (clients != null) {
+        clients.forEach(user -> {
+          user.sendEvent(RECEIVE_USER_DATA_EVENT, messageDto);
+        });
+      }
     });
 
     socketIOServer.addEventListener(SEND_USER_DATA_EVENT, Object.class, (client, data, ackSender) -> {

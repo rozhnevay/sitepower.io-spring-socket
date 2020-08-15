@@ -18,6 +18,7 @@ import ru.otus.spring.repository.MessageRepository;
 import ru.otus.spring.repository.UserRepository;
 import ru.otus.spring.repository.WidgetRepository;
 import ru.otus.spring.service.DialogService;
+import ru.otus.spring.service.UserService;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,8 @@ public class DialogServiceImpl implements DialogService {
   private final DialogRepository dialogRepository;
 
   private final WidgetRepository widgetRepository;
+
+  private final UserService userService;
 
   @Override
   public ArrayList<MessageDto> getDialogMessages(UUID dialogId) {
@@ -46,6 +49,7 @@ public class DialogServiceImpl implements DialogService {
         messageDto.setOperatorName(message.getUserInfo().getFullName());
       }
       messageDto.setType(message.getType());
+      messageDtos.add(messageDto);
     });
     return messageDtos;
   }
@@ -60,7 +64,9 @@ public class DialogServiceImpl implements DialogService {
     message.setType(messageDto.getType());
     message.setCreatedDate(Instant.now());
     /* TODO: доделать сохранение юзера в зависимости от direction */
-    messageRepository.save(message);
+    message = messageRepository.save(message);
+    dialog.setLastMessage(message);
+    dialogRepository.save(dialog);
   }
 
   @Override
@@ -76,6 +82,9 @@ public class DialogServiceImpl implements DialogService {
       Widget widget = widgetRepository.findById(dialogDto.getWidgetId()).orElseThrow(() -> new RuntimeException("Widget not found")); /* TODO: в коснтанты */
       dialog = new Dialog();
       dialog.setWidget(widget);
+
+      dialog = dialogRepository.save(dialog);
+      dialog.setFullName("Обращение с сайта");
       dialog = dialogRepository.save(dialog);
     }
     dialogDto.setDialogId(dialog.getId());
@@ -92,5 +101,26 @@ public class DialogServiceImpl implements DialogService {
   @Override
   public Dialog getDialogById(UUID dialogId) {
     return dialogRepository.findById(dialogId).get();
+  }
+
+  @Override
+  public ArrayList<DialogDto> getDialogsByCurrentTenant() {
+    ArrayList<Widget> widgetList = widgetRepository.findAllByTenant(userService.getCurrentUser().getTenant());
+    ArrayList<DialogDto> dialogDtos = new ArrayList<>();
+    widgetList.forEach(widget -> {
+      ArrayList<Dialog> dialogs = dialogRepository.findAllByWidget(widget);
+      dialogs.forEach(dialog -> {
+        if (dialog.getLastMessage() != null) {
+          DialogDto dialogDto = new DialogDto();
+          dialogDto.setType("site");
+          dialogDto.setDialogId(dialog.getId());
+          dialogDto.setFullName(dialog.getFullName());
+          dialogDto.setLastMessageBody(dialog.getLastMessage().getBody());
+          dialogDto.setLastMessageCreated(dialog.getLastMessage().getCreatedDate());
+          dialogDtos.add(dialogDto);
+        }
+      });
+    });
+    return dialogDtos;
   }
 }

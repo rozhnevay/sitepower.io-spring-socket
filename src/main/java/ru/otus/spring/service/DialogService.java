@@ -18,4 +18,6 @@ public interface DialogService {
   Tenant getTenantByDialogId(UUID dialogId);
 
   Dialog getDialogById(UUID dialogId);
+
+  ArrayList<DialogDto> getDialogsByCurrentTenant();
 }

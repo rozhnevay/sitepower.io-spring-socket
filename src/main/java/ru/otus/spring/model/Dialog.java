@@ -32,5 +32,9 @@ public class Dialog {
   @JoinColumn(name = "widget_id")
   private Widget widget;
 
+  /* TODO: здесь и далее убрать EAGER */
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "last_msg_id")
+  private Message lastMessage;
 //  private
 }

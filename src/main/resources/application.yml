@@ -22,6 +22,14 @@ spring:
       hibernate:
         temp:
           use_jdbc_metadata_defaults: false
+
 logging:
   level:
-    ROOT: debug
+    ROOT: error
+    org:
+      hibernate:
+        SQL: ${LOG_LEVEL_SQL:debug}
+        type:
+          descriptor:
+            sql:
+              BasicBinder: ${LOG_LEVEL_SQL:debug}
