@@ -9,9 +9,13 @@ import java.util.UUID;
 
 public interface WidgetService {
 
+  List<WidgetDto> getWidgetDtosByCurrentUser();
+
   WidgetDto getWidgetDto(UUID widgetId);
 
   Widget getWidget(UUID widgetId);
 
   List<Widget> getWidgetsByTenant(Tenant tenant);
+
+  void saveWidget(UUID widgetId, WidgetDto widgetDto);
 }

@@ -15,4 +15,6 @@ public class WidgetDto {
   private String label;
   private int gradient;
   private String color;
+  private String origin;
+  private int position;
 }

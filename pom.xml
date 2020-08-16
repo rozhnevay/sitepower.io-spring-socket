@@ -7,6 +7,14 @@
     <groupId>ru.otus.arozhnev</groupId>
     <artifactId>sitepower-socket</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <properties>
+        <netty-socketio.version>1.7.7</netty-socketio.version>
+        <socket.io-client.version>1.0.0</socket.io-client.version>
+        <lombok.version>1.18.12</lombok.version>
+        <guava.version>28.0-jre</guava.version>
+        <modelmapper.version>2.3.5</modelmapper.version>
+        <spring-boot-starter-mail.version>2.2.5.RELEASE</spring-boot-starter-mail.version>
+    </properties>
 
 
     <parent>
@@ -30,17 +38,17 @@
         <dependency>
             <groupId>com.corundumstudio.socketio</groupId>
             <artifactId>netty-socketio</artifactId>
-            <version>1.7.7</version>
+            <version>${netty-socketio.version}</version>
         </dependency>
         <dependency>
             <groupId>io.socket</groupId>
             <artifactId>socket.io-client</artifactId>
-            <version>1.0.0</version>
+            <version>${socket.io-client.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.12</version>
+            <version>${lombok.version}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -54,17 +62,17 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>28.0-jre</version>
+            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
-            <version>2.3.5</version>
+            <version>${modelmapper.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
-            <version>2.2.5.RELEASE</version>
+            <version>${spring-boot-starter-mail.version}</version>
         </dependency>
     </dependencies>
 
