@@ -1,18 +1,28 @@
 package ru.otus.spring.controller;
 
-import java.util.ArrayList;
-import java.util.UUID;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import ru.otus.spring.dto.CategoryDto;
+import ru.otus.spring.dto.ContactDto;
 import ru.otus.spring.dto.DialogDto;
 import ru.otus.spring.dto.MessageDto;
+
+import java.util.List;
+import java.util.UUID;
 
 @RequestMapping(path = "/api/dialog")
 public interface DialogController {
   @GetMapping()
-  ArrayList<DialogDto> getDialogs();
+  List<DialogDto> getDialogs();
 
   @GetMapping("/{dialogId}/message")
-  ArrayList<MessageDto> getDialogMessages(@PathVariable("dialogId") UUID dialogId);
+  List<MessageDto> getDialogMessages(@PathVariable("dialogId") UUID dialogId);
+
+  @PostMapping("/{dialogId}/contact")
+  void putDialogContacts(@PathVariable("dialogId") UUID dialogId, @RequestBody ContactDto contactDto);
+
+  @PostMapping("/{dialogId}/category")
+  void putDialogCategory(@PathVariable("dialogId") UUID dialogId, @RequestBody CategoryDto categoryDto);
+
+  @PostMapping("/{dialogId}/send")
+  void sendDialogToMail(@PathVariable("dialogId") UUID dialogId);
 }

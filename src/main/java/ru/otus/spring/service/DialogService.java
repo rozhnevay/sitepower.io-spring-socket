@@ -1,23 +1,27 @@
 package ru.otus.spring.service;
 
-import java.util.ArrayList;
-import java.util.UUID;
+import ru.otus.spring.dto.CategoryDto;
+import ru.otus.spring.dto.ContactDto;
 import ru.otus.spring.dto.DialogDto;
-import ru.otus.spring.dto.MessageDto;
 import ru.otus.spring.model.Dialog;
-import ru.otus.spring.model.Tenant;
+import ru.otus.spring.model.Message;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface DialogService {
 
-  ArrayList<MessageDto> getDialogMessages(UUID dialogId);
-
-  void addDialogMessage(UUID dialogId, MessageDto messageDto);
-
-  DialogDto createDialog(DialogDto dialogDto);
-
-  Tenant getTenantByDialogId(UUID dialogId);
+  DialogDto getOrCreateDialog(DialogDto dialogDto);
 
   Dialog getDialogById(UUID dialogId);
 
-  ArrayList<DialogDto> getDialogsByCurrentTenant();
+  List<DialogDto> getDialogsByCurrentTenant();
+
+  void putDialogContacts(Dialog dialog, ContactDto contactDto);
+
+  void putDialogCategory(Dialog dialog, CategoryDto categoryDto);
+
+  void putDialogLastMessage(Dialog dialog, Message message);
+
+  void sendDialogToEmail(Dialog dialog);
 }

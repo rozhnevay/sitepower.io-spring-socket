@@ -22,14 +22,17 @@ spring:
       hibernate:
         temp:
           use_jdbc_metadata_defaults: false
-
+    show-sql: true
+mail:
+  login: ${MAIL_LOGIN:noreply@sitepower.io}
+  password: ${MAIL_PASSWORD:password}
+  host: ${MAIL_HOST:smtp.yandex.ru}
 logging:
   level:
     ROOT: error
     org:
       hibernate:
-        SQL: ${LOG_LEVEL_SQL:debug}
+        SQL: ${LOG_LEVEL_SQL:all}
         type:
           descriptor:
-            sql:
-              BasicBinder: ${LOG_LEVEL_SQL:debug}
+            sql: trace

@@ -1,16 +1,18 @@
 package ru.otus.spring.model;
 
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "dialog")
 @Getter
 @Setter
+@NamedEntityGraph(name = "dialogWidget",
+    attributeNodes = @NamedAttributeNode("widget"))
 public class Dialog {
 
   @Id
@@ -27,13 +29,20 @@ public class Dialog {
   @Column(name = "region")
   private String region;
 
-  /* TODO: здесь и далее убрать EAGER */
-  @ManyToOne(fetch = FetchType.EAGER)
+  @Column(name = "email")
+  private String email;
+
+  @Column(name = "phone")
+  private String phone;
+
+  @Column(name = "created_date")
+  private Instant createdDate;
+
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "widget_id")
   private Widget widget;
 
-  /* TODO: здесь и далее убрать EAGER */
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "last_msg_id")
   private Message lastMessage;
 //  private

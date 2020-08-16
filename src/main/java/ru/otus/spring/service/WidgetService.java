@@ -1,9 +1,17 @@
 package ru.otus.spring.service;
 
-import java.util.UUID;
-import ru.otus.spring.dto.DialogDto;
 import ru.otus.spring.dto.WidgetDto;
+import ru.otus.spring.model.Tenant;
+import ru.otus.spring.model.Widget;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface WidgetService {
-  WidgetDto getWidget(UUID widgetId);
+
+  WidgetDto getWidgetDto(UUID widgetId);
+
+  Widget getWidget(UUID widgetId);
+
+  List<Widget> getWidgetsByTenant(Tenant tenant);
 }

@@ -155,6 +155,12 @@ databaseChangeLog:
                   name: full_name
                   type: varchar(1000)
               - column:
+                  name: email
+                  type: varchar(1000)
+              - column:
+                  name: phone
+                  type: varchar(1000)
+              - column:
                   name: region
                   type: varchar(1000)
               - column:
