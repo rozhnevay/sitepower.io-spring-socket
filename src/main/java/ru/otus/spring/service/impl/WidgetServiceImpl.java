@@ -1,5 +1,6 @@
 package ru.otus.spring.service.impl;
 
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,11 @@ import java.util.stream.Collectors;
 public class WidgetServiceImpl implements WidgetService {
 
   public static final String WIDGET_NOT_FOUND = "Widget not found";
+  public static final String DEFAULT_COLOR = "sitepower";
+  public static final int DEFAULT_POSITION = 0;
+  public static final int DEFAULT_GRADIENT = 0;
+  public static final String DEFAULT_LABEL = "Онлайн-чат";
+  public static final String DEFAULT_PLACEHOLDER = "Напишите нам";
 
   private final WidgetRepository widgetRepository;
 
@@ -36,16 +42,30 @@ public class WidgetServiceImpl implements WidgetService {
     return widgetRepository.findAllByTenant(tenant);
   }
 
+
   @Override
-  public void saveWidget(UUID widgetId, WidgetDto widgetDto) {
+  public void updateWidget(UUID widgetId, WidgetDto widgetDto) {
     Widget widget = getWidget(widgetId);
-    widget.setColor(widgetDto.getColor());
-    widget.setGradient(widgetDto.getGradient());
-    widget.setLabel(widgetDto.getLabel());
-    widget.setMessagePlaceholder(widgetDto.getMessagePlaceholder());
-    widget.setPosition(widgetDto.getPosition());
+    saveWidget(widget, widgetDto);
+  }
+
+  @Override
+  public void addWidget(WidgetDto widgetDto) {
+    Widget widget = new Widget();
+
+    widget.setTenant(userService.getCurrentUser().getTenant());
+    widget.setOrigin(widgetDto.getOrigin());
+    widget.setColor(DEFAULT_COLOR);
+    widget.setGradient(DEFAULT_GRADIENT);
+    widget.setLabel(DEFAULT_LABEL);
+    widget.setMessagePlaceholder(DEFAULT_PLACEHOLDER);
+    widget.setPosition(DEFAULT_POSITION);
+    widget.setCreatedDate(Instant.now());
+    widget.setUpdatedDate(Instant.now());
+
     widgetRepository.save(widget);
   }
+
 
   @Override
   public List<WidgetDto> getWidgetDtosByCurrentUser() {
@@ -57,5 +77,15 @@ public class WidgetServiceImpl implements WidgetService {
   public WidgetDto getWidgetDto(UUID widgetId) {
     Widget widget = getWidget(widgetId);
     return mapper.map(widget, WidgetDto.class);
+  }
+
+  private Widget saveWidget(Widget widget, WidgetDto widgetDto) {
+    widget.setColor(widgetDto.getColor());
+    widget.setGradient(widgetDto.getGradient());
+    widget.setLabel(widgetDto.getLabel());
+    widget.setMessagePlaceholder(widgetDto.getMessagePlaceholder());
+    widget.setPosition(widgetDto.getPosition());
+    widget.setUpdatedDate(Instant.now());
+    return widgetRepository.save(widget);
   }
 }

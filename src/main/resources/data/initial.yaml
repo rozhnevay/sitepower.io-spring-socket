@@ -7,7 +7,7 @@ databaseChangeLog:
                 values(now());
             # Password: qwe
         - sql: insert into user_info(email, password, full_name, tenant_id)
-               select 'admin@admin.com', '$2a$10$zNXmBn.oIgWEdAIx9Jy48uR0p.RD833PLWWnY7qLKuKzKrkljfW4q', 'First Administrator', id from tenant;
+               select 'rozhnevay@gmail.com', '$2a$10$zNXmBn.oIgWEdAIx9Jy48uR0p.RD833PLWWnY7qLKuKzKrkljfW4q', 'First Administrator', id from tenant;
         - sql: insert into widget(origin, tenant_id)
                select 'localhost', id from tenant;
         - sql: update tenant set main_user_info_id = (select id from user_info);

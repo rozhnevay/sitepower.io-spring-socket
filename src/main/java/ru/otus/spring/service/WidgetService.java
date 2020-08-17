@@ -17,5 +17,7 @@ public interface WidgetService {
 
   List<Widget> getWidgetsByTenant(Tenant tenant);
 
-  void saveWidget(UUID widgetId, WidgetDto widgetDto);
+  void updateWidget(UUID widgetId, WidgetDto widgetDto);
+
+  void addWidget(WidgetDto widgetDto);
 }

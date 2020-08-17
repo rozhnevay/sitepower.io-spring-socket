@@ -1,5 +1,6 @@
 package ru.otus.spring.model;
 
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,6 +31,9 @@ public class UserInfo implements UserDetails {
 
   @Column(name = "email")
   private String email;
+
+  @Column(name = "created_date")
+  private Instant createdDate;
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "tenant_id")

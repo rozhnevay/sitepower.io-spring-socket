@@ -15,4 +15,6 @@ public interface WidgetController {
   @PostMapping("/{widgetId}")
   void saveWidgetSettings(@PathVariable("widgetId") UUID widgetId, @RequestBody WidgetDto widgetDto);
 
+  @PostMapping()
+  void addWidget(@RequestBody WidgetDto widgetDto);
 }

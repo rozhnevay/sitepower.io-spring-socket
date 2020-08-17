@@ -22,6 +22,11 @@ public class WidgetControllerImpl implements WidgetController {
 
   @Override
   public void saveWidgetSettings(UUID widgetId, WidgetDto widgetDto) {
-    widgetService.saveWidget(widgetId, widgetDto);
+    widgetService.updateWidget(widgetId, widgetDto);
+  }
+
+  @Override
+  public void addWidget(WidgetDto widgetDto) {
+    widgetService.addWidget(widgetDto);
   }
 }
