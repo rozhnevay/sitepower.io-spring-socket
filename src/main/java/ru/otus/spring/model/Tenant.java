@@ -15,4 +15,8 @@ public class Tenant {
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", unique = true, nullable = false)
   private UUID id;
+
+  @OneToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "main_user_info_id")
+  private UserInfo mainUserInfo;
 }
