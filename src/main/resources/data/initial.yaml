@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20200425_create_super_user
+      author: arozhnev
+      changes:
+        - sql: insert into tenant(created_date)
+                values(now());
+            # Password: qwe
+        - sql: insert into user_info(email, password, full_name, tenant_id)
+               select 'rozhnevay@gmail.com', '$2a$10$zNXmBn.oIgWEdAIx9Jy48uR0p.RD833PLWWnY7qLKuKzKrkljfW4q', 'First Administrator', id from tenant;
+        - sql: insert into widget(origin, tenant_id)
+               select 'localhost', id from tenant;
+        - sql: update tenant set main_user_info_id = (select id from user_info);

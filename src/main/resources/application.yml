@@ -1,0 +1,38 @@
+socket:
+  host: localhost
+  port: 9092
+spring:
+  application:
+    name: sitepower
+  datasource:
+    url: jdbc:postgresql://${DATASOURCE_HOST:localhost}:${DATASOURCE_PORT:5432}/${DATASOURCE_NAME:postgres}
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    initialization-mode: always
+  liquibase:
+    change-log: classpath:master.yaml
+    enabled: true
+  http:
+    encoding:
+      charset: UTF-8
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+    show-sql: true
+mail:
+  login: ${MAIL_LOGIN:noreply@sitepower.io}
+  password: ${MAIL_PASSWORD:password}
+  host: ${MAIL_HOST:smtp.yandex.ru}
+logging:
+  level:
+    ROOT: error
+    org:
+      hibernate:
+        SQL: ${LOG_LEVEL_SQL:all}
+        type:
+          descriptor:
+            sql: trace
